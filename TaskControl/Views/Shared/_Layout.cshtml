@@ -8,28 +8,13 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-    <sidebar>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TaskControl</a>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </sidebar>
-    <div class="container">
+    <div class="container" style="width:70%; height: 100%; float:right;">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+    @Html.ActionLink("LISTALL", "Index", "Task")
+    @Html.ActionLink("ADD", "Create", "Task")
 
     <footer class="border-top footer text-muted">
         <div class="container">

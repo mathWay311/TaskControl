@@ -75,9 +75,4 @@ body {
     Левая панель с деревом задач
 */
 .sidebar {
-    position: absolute;
-    bottom: 0;
-    height: 100%;
-    width: 15%;
-    white-space: nowrap;
 }
