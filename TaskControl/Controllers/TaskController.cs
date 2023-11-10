@@ -2,30 +2,41 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
 using TaskControl.Models;
+
 
 namespace TaskControl.Controllers
 {
     
     public class TaskController : Controller
     {
-        TaskDBContext db = new TaskDBContext();
+        private TaskDBContext _context = new TaskDBContext();
         // GET: TaskController
         public ActionResult Index()
         {
-            return View(db.Task);
+            _context.Database.EnsureCreated();
+            var tasks = from task in _context.Task select task;
+
+            var TaskIndexVM = new TaskViewModel
+            {
+                Tasks = new List<TaskModel>(tasks.ToList())
+            };
+            return View(TaskIndexVM);
         }
-        protected override void Dispose(bool disposing)
-        {
-            db.Dispose();
-            base.Dispose(disposing);
-        }
+        
         // GET: TaskController/Details/5
-        public ActionResult Details(int id)
+        public ActionResult Details(int? id)
         {
-            return View();
+            if (id == null) return NotFound();
+            
+            TaskModel task = _context.Task.Find(id);
+
+            if (task == null) return NotFound();
+
+            return View(task);
         }
 
         // GET: TaskController/Create
@@ -37,10 +48,12 @@ namespace TaskControl.Controllers
         // POST: TaskController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create([Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EndDate,ParentID")] TaskModel task)
         {
             try
             {
+                _context.Add(task);
+                _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -50,45 +63,72 @@ namespace TaskControl.Controllers
         }
 
         // GET: TaskController/Edit/5
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int? id)
         {
-            return View();
+            if (id == null) return NotFound();
+
+            var task = _context.Task.Find(id);
+
+            if (task == null) return NotFound();
+         
+            return View(task);
         }
 
         // POST: TaskController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EndDate,ParentID")] TaskModel task)
         {
+            if (id != task.ID) return NotFound();
+
             try
             {
+                _context.Update(task);
+                _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch 
             {
-                return View();
+                return RedirectToAction(nameof(Index));
             }
         }
 
         // GET: TaskController/Delete/5
-        public ActionResult Delete(int id)
+        public ActionResult Delete(int? id)
         {
-            return View();
+            if (id == null) return NotFound();
+
+            var task = _context.Task.Find(id);
+
+            if (task == null) return NotFound();
+
+            return View(task);
         }
 
         // POST: TaskController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Delete(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EndDate,ParentID")] TaskModel task)
         {
+            
             try
             {
+                _context.Task.Remove(task);
+                _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
-                return View();
+                return RedirectToAction(nameof(Index));
             }
+        }
+
+
+
+        protected override void Dispose(bool disposing)
+        {
+            _context.Dispose();
+            base.Dispose(disposing);
         }
     }
 }

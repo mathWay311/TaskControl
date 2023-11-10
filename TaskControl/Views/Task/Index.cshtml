@@ -1,4 +1,4 @@
-﻿@model IEnumerable<TaskControl.Models.TaskModel>
+﻿@model TaskControl.Models.TaskViewModel
 @using TaskControl.Models
 @{
     ViewData["Title"] = "Index";
@@ -13,28 +13,28 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.ID)
+                ID
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.TaskName)
+                Имя
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+                Описание
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.TaskExecutors)
+                Исполнители
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.RegistrationDate)
+                Создана
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.taskStatus)
+                Статус
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.EndDate)
+                Окончание
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ParentID)
+                IDРодителя
             </th>
             <th></th>
         </tr>
@@ -42,11 +42,10 @@
 
     <tbody>
 
-        @foreach (TaskControl.Models.TaskModel item in Model)
+        @foreach (var item in Model.Tasks)
         {
             <tr>
                 <td>
-                    @item.TaskName
                     @Html.DisplayFor(modelItem => item.ID)
                 </td>
                 <td>
@@ -71,18 +70,9 @@
                     @Html.DisplayFor(modelItem => item.ParentID)
                 </td>
                 <td>
-                    @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                    @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                    @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-                </td>
-            </tr>
-            <tr>
-                <td>
-                </td>
-                <td>
-                    @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                    @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                    @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                    @Html.ActionLink("Edit", "Edit", new { id = item.ID }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.ID  }) |
+                    @Html.ActionLink("Delete", "Delete", new { id = item.ID })
                 </td>
             </tr>
         }
