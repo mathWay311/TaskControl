@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 //using System.Data.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore;
 
 namespace TaskControl.Models
 {
@@ -22,7 +23,64 @@ namespace TaskControl.Models
         public DateTime RegistrationDate { get; set; }
         public TaskStatus taskStatus { get; set; }
         public DateTime EndDate { get; set; }
-        public int ParentID { get; set; }
+        public int? ParentID { get; set; }
+        public DateTime EstimatedEndDate { get; set; }
+    }
+
+    public static class TaskModelUtils
+    {
+        public static Dictionary<TaskStatus, List<NavigationLink>> navLinks = new Dictionary<TaskStatus, List<NavigationLink>>
+        {
+            {
+                TaskStatus.Assigned, new List<NavigationLink>
+                {
+                    new NavigationLink("Редактировать", "Edit"),
+                    new NavigationLink("Детали", "Details"),
+                    new NavigationLink("Удалить", "Delete"),
+                    new NavigationLink("Начать", "StartTask"),
+                    new NavigationLink("Завершить", "EndTask")
+                }
+            },
+            {
+                TaskStatus.InProgress, new List<NavigationLink>
+                {
+                    new NavigationLink("Редактировать", "Edit"),
+                    new NavigationLink("Детали", "Details"),
+                    new NavigationLink("Удалить", "Delete"),
+                    new NavigationLink("Приостановить", "PauseTask"),
+                    new NavigationLink("Завершить", "EndTask")
+                }
+            },
+            {
+                TaskStatus.Paused, new List<NavigationLink>
+                {
+                    new NavigationLink("Редактировать", "Edit"),
+                    new NavigationLink("Детали", "Details"),
+                    new NavigationLink("Удалить", "Delete"),
+                    new NavigationLink("Возобновить", "StartTask"),
+                    new NavigationLink("Завершить", "EndTask")
+                }
+            },
+            {
+                TaskStatus.Complete, new List<NavigationLink>
+                {
+                    new NavigationLink("Детали", "Details"),
+                    new NavigationLink("Удалить", "Delete"),
+                }
+            }
+        };
+    }
+
+
+    public class NavigationLink
+    {
+        public string LinkText { get; set; }
+        public string ActionName { get; set; }
+        public NavigationLink(string linkText, string actionName)
+        {
+            LinkText = linkText;
+            ActionName = actionName;
+        }
     }
 
     public class TaskDBContext : DbContext
@@ -40,6 +98,7 @@ namespace TaskControl.Models
                     .Build();
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
                 optionsBuilder.UseSqlite(connectionString);
+                optionsBuilder.EnableSensitiveDataLogging();
             }
             
         }
@@ -47,8 +106,6 @@ namespace TaskControl.Models
     
 
     }
-
-   
 
 
 }

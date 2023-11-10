@@ -48,18 +48,19 @@ namespace TaskControl.Controllers
         // POST: TaskController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EndDate,ParentID")] TaskModel task)
+        public ActionResult Create([Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskModel task)
         {
-            try
+            
+            if (ModelState.IsValid)
             {
-                _context.Add(task);
+                task.ParentID = null;
+                task.RegistrationDate = DateTime.Now;
+                _context.Task.Add(task);
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
+            return View(task);
+            
         }
 
         // GET: TaskController/Edit/5
@@ -77,20 +78,20 @@ namespace TaskControl.Controllers
         // POST: TaskController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EndDate,ParentID")] TaskModel task)
+        public async Task<ActionResult> Edit(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,taskStatus,EstimatedEndDate,ParentID")] TaskModel task)
         {
             if (id != task.ID) return NotFound();
 
-            try
+            if (ModelState.IsValid)
             {
                 _context.Update(task);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            catch 
-            {
-                return RedirectToAction(nameof(Index));
-            }
+            return RedirectToAction(nameof(Index));
+
+
+
         }
 
         // GET: TaskController/Delete/5
@@ -108,7 +109,7 @@ namespace TaskControl.Controllers
         // POST: TaskController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EndDate,ParentID")] TaskModel task)
+        public ActionResult Delete(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskModel task)
         {
             
             try
@@ -124,6 +125,55 @@ namespace TaskControl.Controllers
         }
 
 
+        public ActionResult StartTask(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var task = _context.Task.Find(id);
+
+            if (task == null) return NotFound();
+            
+            if (task.taskStatus != Models.TaskStatus.Complete)
+                task.taskStatus = Models.TaskStatus.InProgress;
+
+            _context.Update(task);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
+        }
+        public ActionResult PauseTask(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var task = _context.Task.Find(id);
+
+            if (task == null) return NotFound();
+
+            if (task.taskStatus == Models.TaskStatus.InProgress)
+                task.taskStatus = Models.TaskStatus.Paused;
+
+            _context.Update(task);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        public ActionResult EndTask(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var task = _context.Task.Find(id);
+
+            if (task == null) return NotFound();
+
+            task.taskStatus = Models.TaskStatus.Complete;
+            task.EndDate = DateTime.Now;
+
+            _context.Update(task);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
+        }
 
         protected override void Dispose(bool disposing)
         {

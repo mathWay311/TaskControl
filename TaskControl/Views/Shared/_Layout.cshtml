@@ -8,13 +8,18 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-    <div class="container" style="width:70%; height: 100%; float:right;">
+    <div style="width:10%; height: 100%; float:left;">
+        @Html.ActionLink("LISTALL", "Index", "Task")
+        @Html.ActionLink("ADD", "Create", "Task")
+    </div>
+    <div class="container" style="        width: 90%;
+        height: 100%;
+        float: left;">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
-    @Html.ActionLink("LISTALL", "Index", "Task")
-    @Html.ActionLink("ADD", "Create", "Task")
+    
 
     <footer class="border-top footer text-muted">
         <div class="container">

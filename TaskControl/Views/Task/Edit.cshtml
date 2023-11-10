@@ -29,22 +29,18 @@
                 <span asp-validation-for="TaskExecutors" class="text-danger"></span>
             </div>
             <div type="hidden" class="form-group">
-                <label asp-for="RegistrationDate" class="control-label"></label>
-                <input asp-for="RegistrationDate" class="form-control" />
+                <input type= "hidden" asp-for="RegistrationDate" class="form-control" />
                 <span asp-validation-for="RegistrationDate" class="text-danger"></span>
             </div>
-            <div type="hidden" class="form-group">
-                <label asp-for="taskStatus" class="control-label"></label>
-                <select type="hidden" asp-for="taskStatus" class="form-control" asp-items="Html.GetEnumSelectList<TaskControl.Models.TaskStatus>()"> </select>
+            <div type= "hidden" class="form-group">
+                <input type= "hidden" asp-for="taskStatus" class="form-control"/>
                 <span asp-validation-for="taskStatus" class="text-danger"></span>
             </div>
             <div  type="hidden" class="form-group">
-                <label asp-for="EndDate" class="control-label"></label>
-                <input type="hidden" asp-for="EndDate" class="form-control" />
-                <span asp-validation-for="EndDate" class="text-danger"></span>
+                <input type="hidden" asp-for="EstimatedEndDate" class="form-control" />
+                <span asp-validation-for="EstimatedEndDate" class="text-danger"></span>
             </div>
             <div type="hidden" class="form-group">
-                <label asp-for="ParentID" class="control-label"></label>
                 <input type="hidden" asp-for="ParentID" class="form-control" />
                 <span asp-validation-for="ParentID" class="text-danger"></span>
             </div>
