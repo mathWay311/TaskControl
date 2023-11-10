@@ -10,8 +10,14 @@ namespace TaskControl.Models
         public List<TaskModel> Tasks { get; set; }
     }
 
-    public class TaskDetailViewModel
+    public class SubTaskCreateViewModel
     {
+        public TaskModel parentModel { get; set; }
+    }
 
+    public class TaskDeleteViewModel
+    {
+        public TaskModel parentModel { get; set; }
+        public List<TaskModel> ChildModels { get; set; }
     }
 }

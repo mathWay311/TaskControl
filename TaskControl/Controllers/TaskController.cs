@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +14,9 @@ namespace TaskControl.Controllers
     
     public class TaskController : Controller
     {
-        private TaskDBContext _context = new TaskDBContext();
+
+        private readonly TaskDBContext _context = new TaskDBContext();
+
         // GET: TaskController
         public ActionResult Index()
         {
@@ -89,9 +92,6 @@ namespace TaskControl.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return RedirectToAction(nameof(Index));
-
-
-
         }
 
         // GET: TaskController/Delete/5
@@ -99,24 +99,48 @@ namespace TaskControl.Controllers
         {
             if (id == null) return NotFound();
 
-            var task = _context.Task.Find(id);
+            var taskToDelete = _context.Task.Find(id);
 
-            if (task == null) return NotFound();
+            if (taskToDelete == null) return NotFound();
 
-            return View(task);
+           
+            var allTasks = (from task in _context.Task select task).ToList<TaskModel>();
+
+            List<TaskModel> childrenTaskModels = TaskModelUtils.AllChildrenOfTask(allTasks, taskToDelete);
+
+            var TaskDelVM = new TaskDeleteViewModel
+            {
+                parentModel = taskToDelete,
+                ChildModels = new List<TaskModel>(childrenTaskModels)
+            };
+
+            return View(TaskDelVM);
         }
 
         // POST: TaskController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskModel task)
+        public async Task<ActionResult> Delete(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskModel task)
         {
-            
             try
             {
-                _context.Task.Remove(task);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
+                if (ModelState.IsValid)
+                {
+                    if (id != task.ID) return NotFound();
+
+                    var allTasks = (from ts in _context.Task select ts).ToList<TaskModel>();
+                    List<TaskModel> childrenTaskModels = TaskModelUtils.AllChildrenOfTask(allTasks, task);
+
+                    _context.Task.Remove(task);
+                    foreach (var childTask in childrenTaskModels)
+                    {
+                        _context.Task.Remove(childTask);
+                    }
+                    await _context.SaveChangesAsync();
+                   
+                    return RedirectToAction(nameof(Index));
+                }
+                return NotFound();
             }
             catch
             {
@@ -173,6 +197,36 @@ namespace TaskControl.Controllers
             _context.SaveChanges();
 
             return RedirectToAction(nameof(Index));
+        }
+
+        public ActionResult CreateSubTask(int? id)
+        {
+
+            if (id == null) return NotFound();
+
+            TaskModel parentModel = _context.Task.Find(id);
+
+            if (parentModel == null) return NotFound();
+
+            ViewData["ParentModel"] = parentModel;
+            return View();
+        }
+
+        // POST: TaskController/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateSubTask([Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskModel task)
+        {
+            if (ModelState.IsValid)
+            {
+                task.ID = 0;
+                task.RegistrationDate = DateTime.Now;
+                _context.Task.Add(task);
+                _context.SaveChanges();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(task);
+
         }
 
         protected override void Dispose(bool disposing)

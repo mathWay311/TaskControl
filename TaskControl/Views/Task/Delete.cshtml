@@ -1,64 +1,29 @@
-﻿@model TaskControl.Models.TaskModel
+﻿@model TaskControl.Models.TaskDeleteViewModel
 
 @{
     ViewData["Title"] = "Delete";
 }
 
-<h1>Удалить "@Model.TaskName"</h1>
+<h1>Удалить "@Model.parentModel.TaskName"</h1>
 
 <h3>Это действие безвозвратно удалит саму задачу и её подзадачи.</h3>
 <div>
     <hr> </hr>
-    <h4>"@Model.TaskName"</h4>
+    <h3>"@Model.parentModel.TaskName"</h3>
     <hr> </hr>
     <hr />
     <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.TaskName)
-        </dt>
-        <dd class="col-sm-10">
-            @Model.TaskName
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class="col-sm-10">
-            @Model.Description
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.TaskExecutors)
-        </dt>
-        <dd class="col-sm-10">
-            @Model.TaskExecutors
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.RegistrationDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Model.RegistrationDate
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.taskStatus)
-        </dt>
-        <dd class="col-sm-10">
-            @Model.taskStatus
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.EndDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Model.EndDate
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ParentID)
-        </dt>
-        <dd class="col-sm-10">
-            @Model.ParentID
-        </dd>
+        <h4>"В том числе будут удалены: @Model.parentModel.TaskName"</h4>
+        @foreach (var item in Model.ChildModels)
+        {
+            <hr> </hr>
+            @item.TaskName
+            <hr> </hr>
+        }
     </dl>
 
     <form asp-action="Delete">
-        <input type="hidden" asp-for="ID" />
+        <input type="hidden" asp-for="parentModel.ID" />
         <input type="submit" value="Удалить" class="btn btn-danger" /> |
         <a asp-action="Index">Вернуться</a>
     </form>

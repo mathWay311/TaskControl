@@ -9,10 +9,23 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace TaskControl.Models
 {
-    public enum TaskStatus { Assigned, InProgress, Paused, Complete};
+    public enum TaskStatus { 
+        [Display(Name="Назначена")]
+        Assigned,
+
+        [Display(Name = "Выполняется")]
+        InProgress,
+
+        [Display(Name = "Приостановлена")]
+        Paused,
+
+        [Display(Name = "Завершена")]
+        Complete
+    };
     
     public class TaskModel
     {
@@ -29,6 +42,31 @@ namespace TaskControl.Models
 
     public static class TaskModelUtils
     {
+        public static List<TaskModel> AllChildrenOfTask(List<TaskModel> tasks, TaskModel parentTask)
+        {
+            List<TaskModel> ChildrenTasks = new List<TaskModel>();
+            Queue<TaskModel> toVisit = new Queue<TaskModel>();
+
+            toVisit.Enqueue(parentTask);
+            TaskModel currentNode = toVisit.Peek();
+
+            while (toVisit.Count != 0)
+            {
+                currentNode = toVisit.Peek();
+                foreach (TaskModel task in tasks)
+                {
+                    if (task.ParentID == currentNode.ID)
+                    {
+                        ChildrenTasks.Add(task);
+                        toVisit.Enqueue(task);
+                    }
+                }
+                toVisit.Dequeue();
+            }
+            return ChildrenTasks;
+        }
+
+
         public static Dictionary<TaskStatus, List<NavigationLink>> navLinks = new Dictionary<TaskStatus, List<NavigationLink>>
         {
             {
@@ -38,7 +76,7 @@ namespace TaskControl.Models
                     new NavigationLink("Детали", "Details"),
                     new NavigationLink("Удалить", "Delete"),
                     new NavigationLink("Начать", "StartTask"),
-                    new NavigationLink("Завершить", "EndTask")
+                    new NavigationLink("Создать подзадачу", "CreateSubTask")
                 }
             },
             {
@@ -48,7 +86,8 @@ namespace TaskControl.Models
                     new NavigationLink("Детали", "Details"),
                     new NavigationLink("Удалить", "Delete"),
                     new NavigationLink("Приостановить", "PauseTask"),
-                    new NavigationLink("Завершить", "EndTask")
+                    new NavigationLink("Завершить", "EndTask"),
+                    new NavigationLink("Создать подзадачу", "CreateSubTask")
                 }
             },
             {
@@ -58,7 +97,7 @@ namespace TaskControl.Models
                     new NavigationLink("Детали", "Details"),
                     new NavigationLink("Удалить", "Delete"),
                     new NavigationLink("Возобновить", "StartTask"),
-                    new NavigationLink("Завершить", "EndTask")
+                    new NavigationLink("Создать подзадачу", "CreateSubTask")
                 }
             },
             {
