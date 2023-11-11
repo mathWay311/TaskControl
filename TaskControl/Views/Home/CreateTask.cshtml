@@ -1,0 +1,69 @@
+﻿@model TaskControl.Models.TaskModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+@section Content{
+    <h1>Create</h1>
+
+    <h4>TaskModel</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="CreateTask">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="TaskName" class="control-label"></label>
+                    <input asp-for="TaskName" class="form-control" />
+                    <span asp-validation-for="TaskName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label"></label>
+                    <input asp-for="Description" class="form-control" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="TaskExecutors" class="control-label"></label>
+                    <input asp-for="TaskExecutors" class="form-control" />
+                    <span asp-validation-for="TaskExecutors" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="EstimatedEndDate" class="control-label"></label>
+                    <input asp-for="EstimatedEndDate" class="form-control" />
+                    <span asp-validation-for="EstimatedEndDate" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Добавить задачу" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+
+}
+
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+
+
+@section LeftBar {
+    <h1>
+        TaskControl
+    </h1>
+    <h2>Создать задачу</h2>
+
+
+    <div>
+
+    </div>
+}

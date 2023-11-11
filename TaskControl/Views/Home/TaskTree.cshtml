@@ -1,0 +1,25 @@
+﻿<h1>Index</h1>
+
+
+<div>
+    <p>
+        <a asp-action="Create">+</a>
+    </p>
+
+    <div id="div-jstree">
+
+    </div>
+
+
+
+    <script>
+        $('#div-jstree').jstree(
+            {
+                'core':
+                {
+                    'data' : @Html.Raw(ViewBag.Json),
+                },
+            }
+        );
+    </script>
+</div>

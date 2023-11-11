@@ -7,7 +7,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
 using TaskControl.Models;
-
+using System.Text.Json;
 
 namespace TaskControl.Controllers
 {
@@ -27,9 +27,45 @@ namespace TaskControl.Controllers
             {
                 Tasks = new List<TaskModel>(tasks.ToList())
             };
+
+            IList<JsTreeModel> nodes = new List<JsTreeModel>();
+            foreach (var item in tasks)
+            {
+                nodes.Add(new JsTreeModel
+                {
+                    id = item.ID.ToString(),
+                    parent = item.ParentID == null ? "#" : item.ParentID.ToString(),
+                    text = item.TaskName
+                });
+            }
+            ViewBag.Json = JsonSerializer.Serialize(nodes);
+
             return View(TaskIndexVM);
         }
         
+        public ActionResult PartialIndex()
+        {
+            _context.Database.EnsureCreated();
+            var tasks = from task in _context.Task select task;
+
+            var TaskIndexVM = new TaskViewModel
+            {
+                Tasks = new List<TaskModel>(tasks.ToList())
+            };
+
+            IList<JsTreeModel> nodes = new List<JsTreeModel>();
+            foreach (var item in tasks)
+            {
+                nodes.Add(new JsTreeModel
+                {
+                    id = item.ID.ToString(),
+                    parent = item.ParentID == null ? "#" : item.ParentID.ToString(),
+                    text = item.TaskName
+                });
+            }
+            ViewBag.Json = JsonSerializer.Serialize(nodes);
+            return PartialView(TaskIndexVM);
+        }
         // GET: TaskController/Details/5
         public ActionResult Details(int? id)
         {
@@ -39,8 +75,10 @@ namespace TaskControl.Controllers
 
             if (task == null) return NotFound();
 
-            return View(task);
+            return PartialView(task);
         }
+
+    
 
         // GET: TaskController/Create
         public ActionResult Create()
@@ -103,7 +141,7 @@ namespace TaskControl.Controllers
 
             if (taskToDelete == null) return NotFound();
 
-           
+
             var allTasks = (from task in _context.Task select task).ToList<TaskModel>();
 
             List<TaskModel> childrenTaskModels = TaskModelUtils.AllChildrenOfTask(allTasks, taskToDelete);
@@ -114,7 +152,7 @@ namespace TaskControl.Controllers
                 ChildModels = new List<TaskModel>(childrenTaskModels)
             };
 
-            return View(TaskDelVM);
+            return PartialView("_PartialDelete", TaskDelVM);
         }
 
         // POST: TaskController/Delete/5
@@ -128,14 +166,15 @@ namespace TaskControl.Controllers
                 {
                     if (id != task.ID) return NotFound();
 
-                    var allTasks = (from ts in _context.Task select ts).ToList<TaskModel>();
+                    var allTasks = (from ts in _context.Task where id != ts.ID select ts).ToList<TaskModel>();
                     List<TaskModel> childrenTaskModels = TaskModelUtils.AllChildrenOfTask(allTasks, task);
-
-                    _context.Task.Remove(task);
+                    
+                    
                     foreach (var childTask in childrenTaskModels)
                     {
                         _context.Task.Remove(childTask);
                     }
+                    _context.Task.Remove(task);
                     await _context.SaveChangesAsync();
                    
                     return RedirectToAction(nameof(Index));
@@ -149,7 +188,7 @@ namespace TaskControl.Controllers
         }
 
 
-        public ActionResult StartTask(int? id)
+        public async Task<ActionResult> StartTask(int? id)
         {
             if (id == null) return NotFound();
 
@@ -161,11 +200,11 @@ namespace TaskControl.Controllers
                 task.taskStatus = Models.TaskStatus.InProgress;
 
             _context.Update(task);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return PartialView("_PartialDetails", task);
         }
-        public ActionResult PauseTask(int? id)
+        public async Task<ActionResult> PauseTask(int? id)
         {
             if (id == null) return NotFound();
 
@@ -177,12 +216,12 @@ namespace TaskControl.Controllers
                 task.taskStatus = Models.TaskStatus.Paused;
 
             _context.Update(task);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return PartialView("_PartialDetails", task);
         }
 
-        public ActionResult EndTask(int? id)
+        public async Task<ActionResult> EndTask(int? id)
         {
             if (id == null) return NotFound();
 
@@ -194,9 +233,9 @@ namespace TaskControl.Controllers
             task.EndDate = DateTime.Now;
 
             _context.Update(task);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return PartialView("_PartialDetails", task);
         }
 
         public ActionResult CreateSubTask(int? id)
@@ -209,7 +248,7 @@ namespace TaskControl.Controllers
             if (parentModel == null) return NotFound();
 
             ViewData["ParentModel"] = parentModel;
-            return View();
+            return PartialView("_PartialCreateSubTask");
         }
 
         // POST: TaskController/Create
@@ -228,6 +267,11 @@ namespace TaskControl.Controllers
             return View(task);
 
         }
+
+        public TaskDBContext GetDbContext()
+        {
+            return new TaskDBContext();
+    }
 
         protected override void Dispose(bool disposing)
         {

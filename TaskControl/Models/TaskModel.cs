@@ -138,6 +138,7 @@ namespace TaskControl.Models
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
                 optionsBuilder.UseSqlite(connectionString);
                 optionsBuilder.EnableSensitiveDataLogging();
+                optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             }
             
         }

@@ -2,7 +2,66 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center"> 
-    <h1 class="display-4">Welcome</h1>
-    <p>Current Time is @DateTime.Now </a>.</p>
-</div>
+@section Content {
+    <div class="text-center">
+        <h1 class="display-4">Добро пожаловать</h1>
+        <p>Текущее время на сервере: @DateTime.Now </p>
+    </div>
+}
+
+@section LeftBar {
+    <h1>TaskControl</h1>
+
+
+    <div>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+
+
+        <p>
+            <a asp-action="CreateTask">Новая задача</a>
+        </p>
+
+        <div id="div-jstree">
+
+        </div>
+
+
+
+        <script>
+        $('#div-jstree').jstree(
+            {
+                'core':
+                {
+                    'data' : @Html.Raw(ViewBag.Json),
+                },
+            }
+            );
+        $('#div-jstree').on('select_node.jstree', function (e, data) {
+            var i, j, r = [];
+            var selectID;
+            for (i = 0, j = data.selected.length; i < j; i++) {
+                r.push(data.instance.get_node(data.selected[i]).text);
+                selectID = data.instance.get_node(data.selected[i])["id"];
+            }
+            console.log(selectID);
+            var model = { ID: selectID, };
+            $.ajax({
+                type: "POST",
+                url: "Home/TaskDetails",
+                data: model,
+                datatype: "html",
+                success: function (Data) {
+                    $("#content").load("/Home/TaskDetails", { id: selectID })
+                }
+            });
+
+        }).jstree();
+        </script>
+    </div>
+}
+
+
+

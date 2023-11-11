@@ -1,16 +1,19 @@
 ﻿@model TaskControl.Models.TaskModel
 
 @{
-    ViewData["Title"] = "Create";
+    var parentModel = (TaskModel)ViewData["ParentModel"];
 }
-
-<h1>Create</h1>
 
 <h4>TaskModel</h4>
 <hr />
+
+<h1>Создать подзадачу</h1>
+
+<h4>К задаче "@parentModel.TaskName"</h4>
+<hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="CreateSubTask">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="form-group">
@@ -33,9 +36,13 @@
                 <input asp-for="EstimatedEndDate" class="form-control" />
                 <span asp-validation-for="EstimatedEndDate" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <input type="hidden" asp-for="ParentID" class="form-control" value=@parentModel.ID />
+                <span asp-validation-for="ParentID" class="text-danger"></span>
+            </div>
 
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="CreateSubTask" class="btn btn-primary" />
             </div>
         </form>
     </div>

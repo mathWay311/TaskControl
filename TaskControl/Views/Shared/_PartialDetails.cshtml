@@ -1,0 +1,125 @@
+﻿@model TaskControl.Models.TaskModel
+
+
+    <div>
+        <h4>TaskModel</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.TaskName)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.TaskName)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Description)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.TaskExecutors)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.TaskExecutors)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.RegistrationDate)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.RegistrationDate)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.taskStatus)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.taskStatus)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.EndDate)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.EndDate)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.ParentID)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.ParentID)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.EstimatedEndDate)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.EstimatedEndDate)
+            </dd>
+        </dl>
+    </div>
+    <div>
+
+        @if (Model.taskStatus == TaskControl.Models.TaskStatus.Assigned)
+        {
+            <button class="btn btn-primary" id="delete-task">Удалить</button>
+            <button class="btn btn-primary" id="create-sub-task">Создать подзадачу</button>
+            <button class="btn btn-primary" id="start-task">Начать</button>
+        }
+        @if (Model.taskStatus == TaskControl.Models.TaskStatus.InProgress)
+        {
+            <button class="btn btn-primary" id="delete-task">Удалить</button>
+            <button class="btn btn-primary" id="create-sub-task">Создать подзадачу</button>
+            <button class="btn btn-primary" id="pause-task">Пауза</button>
+            <button class="btn btn-primary" id="end-task">Завершить</button>
+        }
+        @if (Model.taskStatus == TaskControl.Models.TaskStatus.Paused)
+        {
+            <button class="btn btn-primary" id="delete-task">Удалить</button>
+            <button class="btn btn-primary" id="create-sub-task">Создать подзадачу</button>
+            <button class="btn btn-primary" id="start-task">Возобновить</button>
+        }
+        @if (Model.taskStatus == TaskControl.Models.TaskStatus.Complete)
+        {
+            <button class="btn btn-primary" id="delete-task">Удалить</button>
+        }
+
+        <script>
+        $(document).ready(function () {
+            var selectID = @Model.ID;
+
+            $('#delete-task').click(function () {
+                $("#content").load("/Home/TaskDelete/" + selectID)
+            });
+
+            $('#create-sub-task').click(function () {
+                $("#content").load("/Home/CreateSubTask/" + selectID)
+            });
+
+            $('#start-task').click(function () {
+                $("#content").load("/Home/StartTask/" + selectID)
+            });
+
+            $('#pause-task').click(function () {
+                $("#content").load("/Home/PauseTask/" + selectID)
+            });
+
+            $('#end-task').click(function () {
+                $("#content").load("/Home/EndTask/" + selectID)
+            });
+            $.ajax({
+                url: "Home/Delete",
+                type: "POST",
+                data: { id: selectID },
+                cache: false,
+                async: true,
+                success: function (data) {
+                    alert(data);
+                    $("#content").load("/Home/TaskDelete", { id: selectID })
+                }
+            });
+        });
+        </script>
+
+        <a asp-action="Index">Back to List</a>
+    </div>
+
+
+
