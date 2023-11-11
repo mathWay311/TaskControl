@@ -13,9 +13,27 @@ a {
 }
 
 .btn-primary {
-  color: #d4ffff;
-  background-color: #767676;
-  border-color: #1861ac;
+  color: #ffffff;
+  background-color: #1b6ec2;
+  border-color: #0366d6;
+
+}
+    .btn-primary:hover {
+        background-color: #2692ff;
+        
+    }
+
+.icon-assigned {
+    color: #000000;
+}
+.icon-pause {
+    color: #e9d600;
+}
+.icon-inprogress {
+    color: #2692ff;
+}
+.icon-complete {
+    color: #008e03;
 }
 
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {

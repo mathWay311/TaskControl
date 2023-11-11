@@ -60,7 +60,8 @@ namespace TaskControl.Controllers
                 {
                     id = item.ID.ToString(),
                     parent = item.ParentID == null ? "#" : item.ParentID.ToString(),
-                    text = item.TaskName
+                    text = item.TaskName,
+                    type = TaskModelUtils.statusToIconType[item.taskStatus]
                 });
             }
             ViewBag.Json = JsonSerializer.Serialize(nodes);
@@ -94,6 +95,10 @@ namespace TaskControl.Controllers
             
             if (ModelState.IsValid)
             {
+                if (task.EstimatedEndDate < DateTime.Now)
+                {
+                    return View("Error");
+                }
                 task.ParentID = null;
                 task.RegistrationDate = DateTime.Now;
                 _context.Task.Add(task);
@@ -105,7 +110,7 @@ namespace TaskControl.Controllers
         }
 
         // GET: TaskController/Edit/5
-        public ActionResult Edit(int? id)
+        public async Task<ActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
@@ -113,7 +118,7 @@ namespace TaskControl.Controllers
 
             if (task == null) return NotFound();
          
-            return View(task);
+            return PartialView("_PartialTaskEdit", task);
         }
 
         // POST: TaskController/Edit/5
@@ -202,8 +207,21 @@ namespace TaskControl.Controllers
             _context.Update(task);
             await _context.SaveChangesAsync();
 
-            return PartialView("_PartialDetails", task);
+            var allTasks = (from ts in _context.Task where id != ts.ID select ts).ToList<TaskModel>();
+            List<TaskModel> childrenTaskModels = TaskModelUtils.AllChildrenOfTask(allTasks, task);
+            Dictionary<string, TimeSpan> times = TaskModelUtils.SubTaskTime(childrenTaskModels, task);
+
+
+            TaskDetailViewModel taskDetailVM = new TaskDetailViewModel
+            {
+                task = task,
+                AddElapsedTime = times["Elapsed"],
+                AddEstimatedTime = times["Estimated"]
+            };
+
+            return PartialView("_PartialDetails", taskDetailVM);
         }
+
         public async Task<ActionResult> PauseTask(int? id)
         {
             if (id == null) return NotFound();
@@ -218,24 +236,72 @@ namespace TaskControl.Controllers
             _context.Update(task);
             await _context.SaveChangesAsync();
 
-            return PartialView("_PartialDetails", task);
+            var allTasks = (from ts in _context.Task where id != ts.ID select ts).ToList<TaskModel>();
+            List<TaskModel> childrenTaskModels = TaskModelUtils.AllChildrenOfTask(allTasks, task);
+            Dictionary<string, TimeSpan> times = TaskModelUtils.SubTaskTime(childrenTaskModels, task);
+
+
+            TaskDetailViewModel taskDetailVM = new TaskDetailViewModel
+            {
+                task = task,
+                AddElapsedTime = times["Elapsed"],
+                AddEstimatedTime = times["Estimated"]
+            };
+
+            return PartialView("_PartialDetails", taskDetailVM);
         }
 
         public async Task<ActionResult> EndTask(int? id)
         {
+            DateTime endDate = DateTime.Now;
+
             if (id == null) return NotFound();
 
             var task = _context.Task.Find(id);
 
             if (task == null) return NotFound();
 
+            var allTasks = (from ts in _context.Task where id != ts.ID select ts).ToList<TaskModel>();
+            List<TaskModel> childrenTaskModels = TaskModelUtils.AllChildrenOfTask(allTasks, task);
+
+
+            foreach (var childTask in childrenTaskModels)
+            {
+                if (childTask.taskStatus != Models.TaskStatus.InProgress && childTask.taskStatus != Models.TaskStatus.Complete)
+                {
+                    return PartialView("_PartialDetails", task);
+                    
+                }
+                childTask.taskStatus = Models.TaskStatus.Complete;
+                childTask.EndDate = endDate;
+            }
+            foreach(var childTask in childrenTaskModels)
+            {
+                _context.Update(childTask);
+            }
+            
+
+            await _context.SaveChangesAsync();
+
             task.taskStatus = Models.TaskStatus.Complete;
-            task.EndDate = DateTime.Now;
+            task.EndDate = endDate;
 
             _context.Update(task);
             await _context.SaveChangesAsync();
 
-            return PartialView("_PartialDetails", task);
+
+            
+            Dictionary<string, TimeSpan> times = TaskModelUtils.SubTaskTime(childrenTaskModels, task);
+
+
+            TaskDetailViewModel taskDetailVM = new TaskDetailViewModel
+            {
+                task = task,
+                AddElapsedTime = times["Elapsed"],
+                AddEstimatedTime = times["Estimated"]
+            };
+
+            return PartialView("_PartialDetails", taskDetailVM);
         }
 
         public ActionResult CreateSubTask(int? id)

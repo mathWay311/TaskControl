@@ -1,89 +1,124 @@
-﻿@model TaskControl.Models.TaskModel
+﻿@model TaskControl.Models.TaskDetailViewModel
 
 
-    <div>
-        <h4>TaskModel</h4>
-        <hr />
-        <dl class="row">
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.TaskName)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.TaskName)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.Description)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.Description)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.TaskExecutors)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.TaskExecutors)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.RegistrationDate)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.RegistrationDate)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.taskStatus)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.taskStatus)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.EndDate)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.EndDate)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.ParentID)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.ParentID)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.EstimatedEndDate)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.EstimatedEndDate)
-            </dd>
-        </dl>
-    </div>
-    <div>
+<div>
 
-        @if (Model.taskStatus == TaskControl.Models.TaskStatus.Assigned)
+    <hr />
+    <h4>@Model.task.TaskName</h4>
+    <hr>
+    <dl class="row">
+        <hr>
+        <dt class="col-sm-2">
+            <i class="fa fa-list"></i> Описание
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.task.Description)
+        </dd>
+        <hr>
+
+        <dt class="col-sm-2">
+            <i class="fa fa-check-square"></i> Статус
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.task.taskStatus)
+        </dd>
+
+        <dt class="col-sm-2">
+            <i class="fa fa-user"></i> Исполнитель
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.task.TaskExecutors)
+        </dd>
+
+        <hr>
+        <dt class="col-sm-2">
+            <i class="fa fa-calendar"></i> Создана
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.task.RegistrationDate)
+        </dd>
+
+        <dt class="col-sm-2">
+            <i class="fa fa-calendar"></i> Ожидаемое время завершения
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.task.EstimatedEndDate)
+        </dd>
+        <dt class="col-sm-2">
+            <i class="fa fa-hourglass"></i> Плановая трудоёмкость
+        </dt>
+        <dd class="col-sm-10">
+            @{
+                TimeSpan estimatedCompletionTime = (Model.task.EstimatedEndDate - Model.task.RegistrationDate) + Model.AddEstimatedTime;
+                var timeToDisplay = estimatedCompletionTime.ToString(@"dd\:hh\:mm\:ss");
+                @timeToDisplay
+            }
+            @if (Model.AddEstimatedTime != TimeSpan.Zero)
+            {
+            <a>(из которых на выполнение подзадач: @Model.AddEstimatedTime.ToString(@"dd\:hh\:mm\:ss"))</a>
+            }
+</dd>
+        @if (Model.task.taskStatus == TaskControl.Models.TaskStatus.Complete)
         {
-            <button class="btn btn-primary" id="delete-task">Удалить</button>
-            <button class="btn btn-primary" id="create-sub-task">Создать подзадачу</button>
-            <button class="btn btn-primary" id="start-task">Начать</button>
-        }
-        @if (Model.taskStatus == TaskControl.Models.TaskStatus.InProgress)
-        {
-            <button class="btn btn-primary" id="delete-task">Удалить</button>
-            <button class="btn btn-primary" id="create-sub-task">Создать подзадачу</button>
-            <button class="btn btn-primary" id="pause-task">Пауза</button>
-            <button class="btn btn-primary" id="end-task">Завершить</button>
-        }
-        @if (Model.taskStatus == TaskControl.Models.TaskStatus.Paused)
-        {
-            <button class="btn btn-primary" id="delete-task">Удалить</button>
-            <button class="btn btn-primary" id="create-sub-task">Создать подзадачу</button>
-            <button class="btn btn-primary" id="start-task">Возобновить</button>
-        }
-        @if (Model.taskStatus == TaskControl.Models.TaskStatus.Complete)
-        {
-            <button class="btn btn-primary" id="delete-task">Удалить</button>
+            <hr>
+            <dt class="col-sm-2">
+                <i class="fa fa-calendar"></i> Дата завершения
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.task.EndDate)
+            </dd>
+
+            <dt class="col-sm-2">
+                <i class="fa fa-hourglass-end"></i> Фактическое время выполнения
+            </dt>
+            <dd class="col-sm-10">
+                @{
+                    TimeSpan completionTime = (Model.task.RegistrationDate - Model.task.EndDate) + Model.AddElapsedTime;
+                    @completionTime.ToString(@"dd\:hh\:mm\:ss")
+                }
+                @if (Model.AddElapsedTime != TimeSpan.Zero)
+                {
+                    <a>(из которых на выполнение подзадач ушло: @Model.AddElapsedTime.ToString(@"dd\:hh\:mm\:ss"))</a>
+    }
+</dd>
+            <hr>
         }
 
-        <script>
-        $(document).ready(function () {
-            var selectID = @Model.ID;
+
+
+    </dl>
+</div>
+<div>
+
+    @if (Model.task.taskStatus == TaskControl.Models.TaskStatus.Assigned)
+    {
+        <button class="btn btn-primary" id="delete-task"><i class="fa fa-trash-o"></i> Удалить</button>
+        <button class="btn btn-primary" id="create-sub-task"><i class="fa fa-navicon"></i> Создать подзадачу</button>
+        <button class="btn btn-primary" id="start-task"><i class="fa fa-play"></i> Начать</button>
+        <button class="btn btn-primary" id="edit-task"><i class="fa fa-edit"></i> Редактировать</button>
+    }
+    @if (Model.task.taskStatus == TaskControl.Models.TaskStatus.InProgress)
+    {
+        <button class="btn btn-primary" id="delete-task"><i class="fa fa-trash-o"></i> Удалить</button>
+        <button class="btn btn-primary" id="create-sub-task"><i class="fa fa-navicon"></i> Создать подзадачу</button>
+        <button class="btn btn-primary" id="pause-task"><i class="fa fa-pause"></i> Пауза</button>
+        <button class="btn btn-primary" id="end-task"><i class="fa fa-stop"></i> Завершить</button>
+    }
+    @if (Model.task.taskStatus == TaskControl.Models.TaskStatus.Paused)
+    {
+        <button class="btn btn-primary" id="delete-task"><i class="fa fa-trash-o"></i> Удалить</button>
+        <button class="btn btn-primary" id="create-sub-task"><i class="fa fa-navicon"></i> Создать подзадачу</button>
+        <button class="btn btn-primary" id="start-task"><i class="fa fa-play"></i> Возобновить</button>
+        <button class="btn btn-primary" id="edit-task"><i class="fa fa-edit"></i> Редактировать</button>
+    }
+    @if (Model.task.taskStatus == TaskControl.Models.TaskStatus.Complete)
+    {
+        <button class="btn btn-primary" id="delete-task"><i class="fa fa-trash-o"></i> Удалить</button>
+    }
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+            $(document).ready(function () {
+            var selectID = @Model.task.ID;
 
             $('#delete-task').click(function () {
                 $("#content").load("/Home/TaskDelete/" + selectID)
@@ -104,22 +139,15 @@
             $('#end-task').click(function () {
                 $("#content").load("/Home/EndTask/" + selectID)
             });
-            $.ajax({
-                url: "Home/Delete",
-                type: "POST",
-                data: { id: selectID },
-                cache: false,
-                async: true,
-                success: function (data) {
-                    alert(data);
-                    $("#content").load("/Home/TaskDelete", { id: selectID })
-                }
-            });
-        });
-        </script>
 
-        <a asp-action="Index">Back to List</a>
-    </div>
+            $('#edit-task').click(function () {
+                $("#content").load("/Home/TaskEdit/" + selectID)
+            });
+
+
+        });
+    </script>
+</div>
 
 
 

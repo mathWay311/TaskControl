@@ -34,7 +34,9 @@ namespace TaskControl.Controllers
                 {
                     id = item.ID.ToString(),
                     parent = item.ParentID == null ? "#" : item.ParentID.ToString(),
-                    text = item.TaskName
+                    text = item.TaskName,
+                    opened = true,
+                    type = TaskModelUtils.statusToIconType[item.taskStatus]
                 });
             }
             ViewBag.Json = JsonSerializer.Serialize(nodes);
@@ -72,9 +74,21 @@ namespace TaskControl.Controllers
             TaskModel task = _context.Task.Find(id);
 
             if (task == null) return NotFound();
+            
 
+            var allTasks = (from ts in _context.Task where id != ts.ID select ts).ToList<TaskModel>();
+            var childrenTasks = TaskModelUtils.AllChildrenOfTask(allTasks, task);
 
-            return PartialView("_PartialDetails", task);
+            Dictionary<string, TimeSpan> time = TaskModelUtils.SubTaskTime(childrenTasks, task);
+            
+            TaskDetailViewModel taskVM = new TaskDetailViewModel
+            {
+                task = task,
+                AddEstimatedTime = time["Estimated"],
+                AddElapsedTime = time["Elapsed"]
+            };
+            
+            return PartialView("_PartialDetails", taskVM);
         }
 
         public ActionResult TaskDelete(int? id)
@@ -127,7 +141,22 @@ namespace TaskControl.Controllers
             return await _taskController.EndTask(id);
         }
 
+        public async Task<ActionResult> TaskEdit(int? id)
+        {
+            var _taskController = new TaskController();
+            
+            return await _taskController.Edit(id);
+        }
 
+        // POST: TaskController/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> TaskEdit(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,taskStatus,EstimatedEndDate,ParentID")] TaskModel task)
+        {
+            var _taskController = new TaskController();
+
+            return await _taskController.Edit(id, task);
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

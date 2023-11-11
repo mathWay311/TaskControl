@@ -29,6 +29,13 @@
 
 
     <script>
+        $(document).ready(function () {
+            $("#div-jstree").bind("loaded.jstree", function (event, data) {
+                data.instance.open_all();
+            });
+            $("#div-jstree").jstree();
+        })
+
         $('#div-jstree').jstree(
             {
             'core': {
@@ -37,7 +44,19 @@
 
 
             }
-        );
+        )
+            .on('ready.jstree', function () {
+                $('#div-jstree').jstree("open_all");
+            })
+
+            ;
+
+        var $treeview = $("#div-jstree");
+        $treeview
+            .jstree(options)
+            .on('ready.jstree', function () {
+                $treeview.jstree('open_all');
+            });
 
         $('#div-jstree').on('select_node.jstree', function (e, data) {
             var i, j, r = [];

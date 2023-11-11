@@ -10,6 +10,14 @@ namespace TaskControl.Models
         public List<TaskModel> Tasks { get; set; }
     }
 
+    public class TaskDetailViewModel
+    {
+        public TaskModel task { get; set; }
+        public TimeSpan AddEstimatedTime { get; set; }
+        public TimeSpan AddElapsedTime { get; set; }
+    }
+
+
     public class SubTaskCreateViewModel
     {
         public TaskModel parentModel { get; set; }

@@ -10,9 +10,9 @@
 }
 
 @section LeftBar {
-    <h1>TaskControl</h1>
-
-
+    <h1><i class="fa fa-sticky-note"></i> TaskControl</h1>
+    <h6>Система управления задачами </h6>
+    <hr>
     <div>
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
@@ -21,7 +21,7 @@
 
 
         <p>
-            <a asp-action="CreateTask">Новая задача</a>
+            <a  asp-action="CreateTask"><i class="fa fa-plus"></i>  Назначить</a>
         </p>
 
         <div id="div-jstree">
@@ -35,10 +35,33 @@
             {
                 'core':
                 {
-                    'data' : @Html.Raw(ViewBag.Json),
+                    'data': @Html.Raw(ViewBag.Json),
+                    'icon': "fa fa-sticky-note"
                 },
+                
+                "types": {
+                    "assigned": {
+                        "icon": "fa fa-file icon-assigned"
+                    },
+                    "inprogress": {
+                        "icon": "fa fa-play icon-inprogress"
+                    },
+                    "paused": {
+                        "icon": "fa fa-pause icon-pause"
+                    },
+                    "complete": {
+                        "icon": "fa fa-check icon-complete"
+                    }
+                },
+                "plugins": ["state", "types"]
+                
             }
-            );
+        )
+            .bind("loaded.jstree", function (event, data) {
+                $(this).jstree("open_all");
+            })    
+            ;
+
         $('#div-jstree').on('select_node.jstree', function (e, data) {
             var i, j, r = [];
             var selectID;

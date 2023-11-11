@@ -30,6 +30,8 @@ namespace TaskControl.Models
     public class TaskModel
     {
         public int ID { get; set; }
+        [Required]
+        [StringLength(60, ErrorMessage = "Название задачи должно быть длиной от {2} до {1} символов.", MinimumLength = 1)]
         public string TaskName { get; set; }
         public string Description { get; set; }
         public string TaskExecutors { get; set; }
@@ -37,11 +39,35 @@ namespace TaskControl.Models
         public TaskStatus taskStatus { get; set; }
         public DateTime EndDate { get; set; }
         public int? ParentID { get; set; }
+        [TaskModelUtils.DateTimeValidation(ErrorMessage = "LOL")]
         public DateTime EstimatedEndDate { get; set; }
     }
 
     public static class TaskModelUtils
     {
+        [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+        public class DateTimeValidation : ValidationAttribute
+        {
+
+            public string GetErrorMessage() =>
+                $"Дата должна быть не раньше текущей";
+
+            protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+            {
+                var date = ((DateTime)value!).Date;
+
+                if (date < DateTime.Now)
+                {
+                    return new ValidationResult("Something went wrong"); ;
+                }
+
+                return ValidationResult.Success;
+            }
+
+
+
+        }
+
         public static List<TaskModel> AllChildrenOfTask(List<TaskModel> tasks, TaskModel parentTask)
         {
             List<TaskModel> ChildrenTasks = new List<TaskModel>();
@@ -66,6 +92,51 @@ namespace TaskControl.Models
             return ChildrenTasks;
         }
 
+        public static Dictionary<string, TimeSpan> SubTaskTime (List<TaskModel> childTasks, TaskModel parentTask)
+        {
+            Dictionary<string, TimeSpan> times = new Dictionary<string, TimeSpan>
+            {
+                { "Estimated", TimeSpan.FromSeconds(0)},
+                { "Elapsed", TimeSpan.FromSeconds(0)}
+            };
+
+            TimeSpan totalAdditionalEstimatedTime = TimeSpan.FromSeconds(0);
+
+            foreach (var childTask in childTasks)
+            {
+                totalAdditionalEstimatedTime += childTask.EstimatedEndDate - childTask.RegistrationDate;
+            }
+            times["Estimated"] += totalAdditionalEstimatedTime;
+
+            if (parentTask.taskStatus == Models.TaskStatus.Complete)
+            {
+                TimeSpan totalAdditionalElapsedTime = TimeSpan.FromSeconds(0);
+                foreach (var childTask in childTasks)
+                {
+                    totalAdditionalElapsedTime += childTask.RegistrationDate - childTask.EndDate;
+                }
+                times["Elapsed"] += totalAdditionalElapsedTime;
+            }
+
+            return times;
+        }
+
+
+        public static Dictionary<TaskStatus, string> statusToIconType = new Dictionary<TaskStatus, string>
+        {
+            {
+                TaskStatus.Assigned, "assigned"
+            },
+            {
+                TaskStatus.InProgress, "inprogress"
+            },
+            {
+                TaskStatus.Paused, "paused"
+            },
+            {
+                TaskStatus.Complete, "complete"
+            },
+        };
 
         public static Dictionary<TaskStatus, List<NavigationLink>> navLinks = new Dictionary<TaskStatus, List<NavigationLink>>
         {
