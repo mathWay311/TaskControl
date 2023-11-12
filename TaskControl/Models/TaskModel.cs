@@ -195,7 +195,7 @@ namespace TaskControl.Models
 
     public class TaskDBContext : DbContext
     {
-         public DbSet<TaskModel> Task { get; set; }
+        public DbSet<TaskModel> Task { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

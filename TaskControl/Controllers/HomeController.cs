@@ -43,6 +43,7 @@ namespace TaskControl.Controllers
 
             return View(TaskIndexVM);
         }
+
         public IActionResult Privacy()
         {
             return View();
@@ -51,7 +52,6 @@ namespace TaskControl.Controllers
         public IActionResult CreateTask()
         {
             var _taskController = new TaskController();
-
             return _taskController.Create();
         }
 
@@ -59,8 +59,7 @@ namespace TaskControl.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult CreateTask([Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskModel task)
         {
-            var _taskController = new TaskController();
-            
+            var _taskController = new TaskController(); 
             return _taskController.Create(task);
         }
 
@@ -94,7 +93,6 @@ namespace TaskControl.Controllers
         public ActionResult TaskDelete(int? id)
         {
             var _taskController = new TaskController();
-
             return _taskController.Delete(id);
         }
 
@@ -144,7 +142,6 @@ namespace TaskControl.Controllers
         public async Task<ActionResult> TaskEdit(int? id)
         {
             var _taskController = new TaskController();
-            
             return await _taskController.Edit(id);
         }
 
@@ -154,7 +151,6 @@ namespace TaskControl.Controllers
         public async Task<ActionResult> TaskEdit(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,taskStatus,EstimatedEndDate,ParentID")] TaskModel task)
         {
             var _taskController = new TaskController();
-
             return await _taskController.Edit(id, task);
         }
 

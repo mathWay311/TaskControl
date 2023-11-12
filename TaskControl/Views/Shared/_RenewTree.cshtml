@@ -1,0 +1,78 @@
+﻿
+@section LeftBar {
+    <h1><i class="fa fa-sticky-note"></i> TaskControl</h1>
+    <h6>Система управления задачами </h6>
+    <hr>
+    <div>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+
+
+        <p>
+            <a asp-action="CreateTask"><i class="fa fa-plus"></i>  Назначить</a>
+        </p>
+
+        <div id="div-jstree">
+
+        </div>
+
+
+
+        <script>
+        $('#div-jstree').jstree(
+            {
+                'core':
+                {
+                    'data': @Html.Raw(ViewBag.Json),
+                    'icon': "fa fa-sticky-note"
+                },
+
+                "types": {
+                    "assigned": {
+                        "icon": "fa fa-file icon-assigned"
+                    },
+                    "inprogress": {
+                        "icon": "fa fa-play icon-inprogress"
+                    },
+                    "paused": {
+                        "icon": "fa fa-pause icon-pause"
+                    },
+                    "complete": {
+                        "icon": "fa fa-check icon-complete"
+                    }
+                },
+                "plugins": ["state", "types"]
+
+            }
+        )
+            .bind("loaded.jstree", function (event, data) {
+                $(this).jstree("open_all");
+                alert("!");
+            })
+            ;
+
+        $('#div-jstree').on('select_node.jstree', function (e, data) {
+            var i, j, r = [];
+            var selectID;
+            for (i = 0, j = data.selected.length; i < j; i++) {
+                r.push(data.instance.get_node(data.selected[i]).text);
+                selectID = data.instance.get_node(data.selected[i])["id"];
+            }
+            console.log(selectID);
+            var model = { ID: selectID, };
+            $.ajax({
+                type: "POST",
+                url: "Home/TaskDetails",
+                data: model,
+                datatype: "html",
+                success: function (Data) {
+                    $("#content").load("/Home/TaskDetails", { id: selectID })
+                }
+            });
+
+        }).jstree();
+        </script>
+    </div>
+}
