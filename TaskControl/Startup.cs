@@ -8,11 +8,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using TaskControl.Service;
+using TaskControl.Models;
+using TaskControl.Service.DTO;
 
 namespace TaskControl
 {
     public class Startup
     {
+        public class AppMappingProfile : Profile
+        {
+            public AppMappingProfile()
+            {
+                CreateMap<TaskViewModel, TaskDto>();
+                CreateMap<List<TaskDto>, List<TaskViewModel>>();
+                CreateMap<Models.TaskStatus, Service.DTO.TaskStatus>();
+            }
+        }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -24,6 +38,8 @@ namespace TaskControl
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddAutoMapper(typeof(AppMappingProfile));
+            services.AddScoped<ITaskService, TaskService> ();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

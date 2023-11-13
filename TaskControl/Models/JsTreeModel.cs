@@ -18,5 +18,9 @@ namespace TaskControl.Models
         public string li_attr { get; set; }
         public string a_attr { get; set; }
         public string type { get; set; }
+
+
     }
+
+    
 }

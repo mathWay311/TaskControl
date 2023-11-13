@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,12 +8,24 @@ namespace TaskControl.Models
 {
     public class TaskViewModel
     {
-        public List<TaskModel> Tasks { get; set; }
+        public int ID { get; set; }
+        public string TaskName { get; set; }
+        public string Description { get; set; }
+        public string TaskExecutors { get; set; }
+        public DateTime RegistrationDate { get; set; }
+        public TaskStatus taskStatus { get; set; }
+        public DateTime EndDate { get; set; }
+        public int ParentID { get; set; }
+        public DateTime EstimatedEndDate { get; set; }
+    }
+    public class TaskIndexViewModel
+    {
+        public List<TaskViewModel> Tasks { get; set; }
     }
 
     public class TaskDetailViewModel
     {
-        public TaskModel task { get; set; }
+        public TaskViewModel task { get; set; }
         public TimeSpan AddEstimatedTime { get; set; }
         public TimeSpan AddElapsedTime { get; set; }
     }
@@ -20,12 +33,12 @@ namespace TaskControl.Models
 
     public class SubTaskCreateViewModel
     {
-        public TaskModel parentModel { get; set; }
+        public TaskViewModel parentModel { get; set; }
     }
 
     public class TaskDeleteViewModel
     {
-        public TaskModel parentModel { get; set; }
-        public List<TaskModel> ChildModels { get; set; }
+        public TaskViewModel parentModel { get; set; }
+        public List<TaskViewModel> ChildModels { get; set; }
     }
 }

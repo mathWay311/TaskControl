@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -6,40 +7,34 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using TaskControl.DAL.Entity;
 using TaskControl.Models;
+using TaskControl.Service;
+using TaskControl.Service.DTO;
+
 namespace TaskControl.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        public HomeController(ILogger<HomeController> logger)
+        private readonly ITaskService _service;
+        private readonly IMapper _mapper;
+        public HomeController(ILogger<HomeController> logger, ITaskService service, IMapper mapper)
         {
             _logger = logger;
+            _service = service;
+            _mapper = mapper;
         }
+
         public IActionResult Index()
         {
-            var _context = new TaskController().GetDbContext();
-            _context.Database.EnsureCreated();
-            var tasks = from task in _context.Task select task;
+            var tasks = _mapper.Map<List<TaskDto>, List<TaskViewModel>>(_service.TaskIndex()) ;
 
-            var TaskIndexVM = new TaskViewModel
+            var TaskIndexVM = new TaskIndexViewModel
             {
-                Tasks = new List<TaskModel>(tasks.ToList())
+                Tasks = tasks
             };
-
-            IList<JsTreeModel> nodes = new List<JsTreeModel>();
-            foreach (var item in tasks)
-            {
-                nodes.Add(new JsTreeModel
-                {
-                    id = item.ID.ToString(),
-                    parent = item.ParentID == null ? "#" : item.ParentID.ToString(),
-                    text = item.TaskName,
-                    opened = true,
-                    type = TaskModelUtils.statusToIconType[item.taskStatus]
-                });
-            }
-            ViewBag.Json = JsonSerializer.Serialize(nodes);
+            ViewBag.Json = JsonSerializer.Serialize(TaskModelUtils.GetTreeJson(tasks));
 
             return View(TaskIndexVM);
         }
@@ -51,108 +46,140 @@ namespace TaskControl.Controllers
 
         public IActionResult CreateTask()
         {
-            var _taskController = new TaskController();
-            return _taskController.Create();
+            return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateTask([Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskModel task)
+        public ActionResult CreateTask([FromBody] TaskViewModel taskVM)
         {
-            var _taskController = new TaskController(); 
-            return _taskController.Create(task);
+            if (ModelState.IsValid)
+            {
+                _service.TaskCreate(_mapper.Map<TaskViewModel, TaskDto>(taskVM));
+                return View(taskVM);
+            }
+            return View();
+        }
+        public ActionResult CreateSubTask(int id)
+        {
+            var parentTask = _mapper.Map<TaskDto, TaskViewModel>(_service.Find(id));
+
+            if (parentTask == null) return NotFound();
+
+            ViewData["ParentModel"] = parentTask;
+
+            return PartialView("_PartialCreateSubTask");
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateSubTask([FromBody] TaskViewModel task)
+        {
+            if (ModelState.IsValid)
+            {
+                _service.SubTaskCreate(_mapper.Map<TaskViewModel, TaskDto>(task));
+                return RedirectToAction(nameof(Index));
+            }
+            return View(task);
         }
 
-        public IActionResult TaskDetails(int? id)
+        public IActionResult TaskDetails(int id)
         {
-            var _taskController = new TaskController();
-            var _context = _taskController.GetDbContext();
-
-            if (id == null) return NotFound();
-
-            TaskModel task = _context.Task.Find(id);
+            var task = _mapper.Map < TaskDto, TaskViewModel> (_service.Find(id));
 
             if (task == null) return NotFound();
-            
 
-            var allTasks = (from ts in _context.Task where id != ts.ID select ts).ToList<TaskModel>();
-            var childrenTasks = TaskModelUtils.AllChildrenOfTask(allTasks, task);
-
-            Dictionary<string, TimeSpan> time = TaskModelUtils.SubTaskTime(childrenTasks, task);
+            Dictionary<string, TimeSpan> times = _service.SubTaskTime(id);
             
             TaskDetailViewModel taskVM = new TaskDetailViewModel
             {
                 task = task,
-                AddEstimatedTime = time["Estimated"],
-                AddElapsedTime = time["Elapsed"]
+                AddEstimatedTime = times["Estimated"],
+                AddElapsedTime = times["Elapsed"]
             };
             
             return PartialView("_PartialDetails", taskVM);
         }
 
-        public ActionResult TaskDelete(int? id)
+        public ActionResult TaskEdit(int id)
         {
-            var _taskController = new TaskController();
-            return _taskController.Delete(id);
+            var task = _mapper.Map<TaskDto, TaskViewModel>(_service.Find(id));
+            return PartialView("_PartialTaskEdit", task);
         }
 
-        // POST: TaskController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> TaskDelete(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskModel task)
+        public async Task<ActionResult> TaskEdit(int id, [FromBody] TaskViewModel task)
         {
-            var _taskController = new TaskController();
-
-            return await _taskController.Delete(id, task);
+            if(ModelState.IsValid)
+            {
+                var TaskDto = _mapper.Map<TaskViewModel, TaskDto>(task);
+                await _service.Edit(id, TaskDto);
+                return View(RedirectToAction(nameof(Index)));
+            }
+            else
+            {
+                return(NotFound());
+            }
         }
 
-        public ActionResult CreateSubTask(int? id)
+        public ActionResult TaskDelete(int id)
         {
-            var _taskController = new TaskController();
-            return _taskController.CreateSubTask(id);
+
+            var taskToDelete = _mapper.Map<TaskDto, TaskViewModel> (_service.Find(id));
+            
+            if (taskToDelete == null) return NotFound();
+
+            var childrenTasks = _mapper.Map<List<TaskDto>, List<TaskViewModel>>( _service.AllChildrenOfTask(id));
+
+            var TaskDelVM = new TaskDeleteViewModel
+            {
+                parentModel = taskToDelete,
+                ChildModels = childrenTasks
+            };
+
+            return PartialView("_PartialDelete", TaskDelVM);
         }
 
-        // POST: TaskController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateSubTask([Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskModel task)
-        {
-            var _taskController = new TaskController();
-            return _taskController.CreateSubTask(task);
+        public async Task<ActionResult> TaskDelete(int id, [FromBody] TaskViewModel task)
+        { 
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (id != task.ID) return NotFound();
+
+                    await _service.Delete(id);
+                    return RedirectToAction(nameof(Index));
+                }
+                return NotFound();
+            }
+            catch
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
-        public async Task<ActionResult> StartTask(int? id)
+        public async Task<ActionResult> StartTask(int id)
         {
-            var _taskController = new TaskController();
-            return await _taskController.StartTask(id);
+            await _service.ChangeStatus(id, _mapper.Map<Models.TaskStatus, Service.DTO.TaskStatus>(Models.TaskStatus.InProgress));
+            return (ActionResult)TaskDetails(id);
         }
 
-        public async Task<ActionResult> PauseTask(int? id)
+        public async Task<ActionResult> PauseTask(int id)
         {
-            var _taskController = new TaskController();
-            return await _taskController.PauseTask(id);
+            await _service.ChangeStatus(id, _mapper.Map<Models.TaskStatus, Service.DTO.TaskStatus>(Models.TaskStatus.Paused));
+            return (ActionResult)TaskDetails(id);
         }
 
-        public async Task<ActionResult> EndTask(int? id)
+        public async Task<ActionResult> EndTask(int id)
         {
-            var _taskController = new TaskController();
-            return await _taskController.EndTask(id);
+            await _service.ChangeStatus(id, _mapper.Map<Models.TaskStatus, Service.DTO.TaskStatus>(Models.TaskStatus.Complete));
+            return (ActionResult)TaskDetails(id);
         }
 
-        public async Task<ActionResult> TaskEdit(int? id)
-        {
-            var _taskController = new TaskController();
-            return await _taskController.Edit(id);
-        }
-
-        // POST: TaskController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> TaskEdit(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,taskStatus,EstimatedEndDate,ParentID")] TaskModel task)
-        {
-            var _taskController = new TaskController();
-            return await _taskController.Edit(id, task);
-        }
+        
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

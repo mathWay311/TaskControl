@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30907.101
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskControl", "TaskControl\TaskControl.csproj", "{91F8C9C2-B7B7-4A07-BB9E-C3185643EB07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskControl", "TaskControl\TaskControl.csproj", "{91F8C9C2-B7B7-4A07-BB9E-C3185643EB07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskControl Service", "TaskControl Service\TaskControl Service.csproj", "{BE52B7D4-997C-4EFC-8B83-573D77BDABCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskControl DAL", "TaskControl DAL\TaskControl DAL.csproj", "{458A73D2-2508-4717-A7F6-CF9C55B1F384}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{91F8C9C2-B7B7-4A07-BB9E-C3185643EB07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91F8C9C2-B7B7-4A07-BB9E-C3185643EB07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91F8C9C2-B7B7-4A07-BB9E-C3185643EB07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE52B7D4-997C-4EFC-8B83-573D77BDABCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE52B7D4-997C-4EFC-8B83-573D77BDABCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE52B7D4-997C-4EFC-8B83-573D77BDABCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE52B7D4-997C-4EFC-8B83-573D77BDABCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{458A73D2-2508-4717-A7F6-CF9C55B1F384}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{458A73D2-2508-4717-A7F6-CF9C55B1F384}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{458A73D2-2508-4717-A7F6-CF9C55B1F384}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{458A73D2-2508-4717-A7F6-CF9C55B1F384}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -13,8 +13,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TaskControl.Models
 {
-    public enum TaskStatus { 
-        [Display(Name="Назначена")]
+    public enum TaskStatus
+    {
+        [Display(Name = "Назначена")]
         Assigned,
 
         [Display(Name = "Выполняется")]
@@ -26,25 +27,25 @@ namespace TaskControl.Models
         [Display(Name = "Завершена")]
         Complete
     };
-    
-    public class TaskModel
-    {
-        public int ID { get; set; }
-        [Required]
-        [StringLength(60, ErrorMessage = "Название задачи должно быть длиной от {2} до {1} символов.", MinimumLength = 1)]
-        public string TaskName { get; set; }
-        public string Description { get; set; }
-        public string TaskExecutors { get; set; }
-        public DateTime RegistrationDate { get; set; }
-        public TaskStatus taskStatus { get; set; }
-        public DateTime EndDate { get; set; }
-        public int? ParentID { get; set; }
-        [TaskModelUtils.DateTimeValidation(ErrorMessage = "LOL")]
-        public DateTime EstimatedEndDate { get; set; }
-    }
 
     public static class TaskModelUtils
     {
+        public static IList<JsTreeModel> GetTreeJson(List<TaskViewModel> tasks)
+        {
+            IList<JsTreeModel> nodes = new List<JsTreeModel>();
+            foreach (var item in tasks)
+            {
+                nodes.Add(new JsTreeModel
+                {
+                    id = item.ID.ToString(),
+                    parent = item.ParentID == null ? "#" : item.ParentID.ToString(),
+                    text = item.TaskName,
+                    opened = true,
+                    type = TaskModelUtils.statusToIconType[item.taskStatus]
+                });
+            }
+            return nodes;
+        }
         [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
         public class DateTimeValidation : ValidationAttribute
         {
@@ -66,59 +67,6 @@ namespace TaskControl.Models
 
 
 
-        }
-
-        public static List<TaskModel> AllChildrenOfTask(List<TaskModel> tasks, TaskModel parentTask)
-        {
-            List<TaskModel> ChildrenTasks = new List<TaskModel>();
-            Queue<TaskModel> toVisit = new Queue<TaskModel>();
-
-            toVisit.Enqueue(parentTask);
-            TaskModel currentNode = toVisit.Peek();
-
-            while (toVisit.Count != 0)
-            {
-                currentNode = toVisit.Peek();
-                foreach (TaskModel task in tasks)
-                {
-                    if (task.ParentID == currentNode.ID)
-                    {
-                        ChildrenTasks.Add(task);
-                        toVisit.Enqueue(task);
-                    }
-                }
-                toVisit.Dequeue();
-            }
-            return ChildrenTasks;
-        }
-
-        public static Dictionary<string, TimeSpan> SubTaskTime (List<TaskModel> childTasks, TaskModel parentTask)
-        {
-            Dictionary<string, TimeSpan> times = new Dictionary<string, TimeSpan>
-            {
-                { "Estimated", TimeSpan.FromSeconds(0)},
-                { "Elapsed", TimeSpan.FromSeconds(0)}
-            };
-
-            TimeSpan totalAdditionalEstimatedTime = TimeSpan.FromSeconds(0);
-
-            foreach (var childTask in childTasks)
-            {
-                totalAdditionalEstimatedTime += childTask.EstimatedEndDate - childTask.RegistrationDate;
-            }
-            times["Estimated"] += totalAdditionalEstimatedTime;
-
-            if (parentTask.taskStatus == Models.TaskStatus.Complete)
-            {
-                TimeSpan totalAdditionalElapsedTime = TimeSpan.FromSeconds(0);
-                foreach (var childTask in childTasks)
-                {
-                    totalAdditionalElapsedTime += childTask.RegistrationDate - childTask.EndDate;
-                }
-                times["Elapsed"] += totalAdditionalElapsedTime;
-            }
-
-            return times;
         }
 
 
@@ -193,30 +141,7 @@ namespace TaskControl.Models
         }
     }
 
-    public class TaskDBContext : DbContext
-    {
-        public DbSet<TaskModel> Task { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            
-            if (!optionsBuilder.IsConfigured)
-            {
-                IConfigurationRoot configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json")
-                    .Build();
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
-                optionsBuilder.UseSqlite(connectionString);
-                optionsBuilder.EnableSensitiveDataLogging();
-                optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            }
-            
-        }
-
-    
-
-    }
+   
 
 
 }
