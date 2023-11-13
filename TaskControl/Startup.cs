@@ -21,9 +21,10 @@ namespace TaskControl
         {
             public AppMappingProfile()
             {
-                CreateMap<TaskViewModel, TaskDto>();
-                CreateMap<List<TaskDto>, List<TaskViewModel>>();
-                CreateMap<Models.TaskStatus, Service.DTO.TaskStatus>();
+                CreateMap<TaskViewModel, TaskDto>().ReverseMap();
+                //CreateMap<List<TaskDto>, List<TaskViewModel>>().ReverseMap();
+                CreateMap<Models.TaskStatus, Service.DTO.TaskStatus>().ReverseMap();
+                CreateMap<TaskDto, DAL.Entity.Task>().ReverseMap();
             }
         }
 

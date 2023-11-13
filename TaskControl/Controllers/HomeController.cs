@@ -108,13 +108,13 @@ namespace TaskControl.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> TaskEdit(int id, [FromBody] TaskViewModel task)
+        public async Task<ActionResult> TaskEdit(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskViewModel task)
         {
             if(ModelState.IsValid)
             {
                 var TaskDto = _mapper.Map<TaskViewModel, TaskDto>(task);
                 await _service.Edit(id, TaskDto);
-                return View(RedirectToAction(nameof(Index)));
+                return (ActionResult)TaskDetails(id);
             }
             else
             {

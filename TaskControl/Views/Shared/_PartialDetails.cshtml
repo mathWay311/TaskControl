@@ -73,7 +73,8 @@
             </dt>
             <dd class="col-sm-10">
                 @{
-                    TimeSpan completionTime = (Model.task.RegistrationDate - Model.task.EndDate) + Model.AddElapsedTime;
+                    TimeSpan completionTime = ((DateTime)Model.task.RegistrationDate - (DateTime)Model.task.EndDate) + Model.AddElapsedTime;
+
                     @completionTime.ToString(@"dd\:hh\:mm\:ss")
                 }
                 @if (Model.AddElapsedTime != TimeSpan.Zero)

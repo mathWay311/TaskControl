@@ -18,9 +18,7 @@ namespace TaskControl.Service
         {
             public ServiceMappingProfile()
             {
-                CreateMap<TaskDto, DAL.Entity.Task>();
-                CreateMap<DAL.Entity.Task, TaskDto>();
-                CreateMap<List<DAL.Entity.Task>, List<TaskDto>>();
+                CreateMap<TaskDto, DAL.Entity.Task>().ReverseMap();
             }
         }
 

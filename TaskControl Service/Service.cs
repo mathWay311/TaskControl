@@ -49,6 +49,7 @@ namespace TaskControl.Service
         {
             _logger = logger;
             _mapper = mapper;
+            _context = new TaskDBContext();
         }
         public System.Threading.Tasks.Task TaskCreate(TaskDto task)
         {
@@ -91,8 +92,9 @@ namespace TaskControl.Service
 
         public System.Threading.Tasks.Task Edit(int id, TaskDto task)
         {
-            task.ID = id;
-            _context.Update(task);
+            var entity = _mapper.Map<TaskDto, DAL.Entity.Task>(task);
+            entity.ID = id;
+            _context.Update(entity);
             return _context.SaveChangesAsync();
         }
 
@@ -199,7 +201,7 @@ namespace TaskControl.Service
                 TimeSpan totalAdditionalElapsedTime = TimeSpan.FromSeconds(0);
                 foreach (var childTask in childTasks)
                 {
-                    totalAdditionalElapsedTime += childTask.RegistrationDate - childTask.EndDate;
+                    totalAdditionalElapsedTime += childTask.RegistrationDate - (DateTime)childTask.EndDate;
                 }
                 times["Elapsed"] += totalAdditionalElapsedTime;
             }
