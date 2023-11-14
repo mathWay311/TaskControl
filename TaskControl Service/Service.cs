@@ -1,16 +1,6 @@
-﻿
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using SQLitePCL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
 using TaskControl.DAL;
-using TaskControl.DAL.Entity;
 using TaskControl.Service.DTO;
 
 namespace TaskControl.Service
@@ -26,13 +16,13 @@ namespace TaskControl.Service
     {
         public List<TaskDto> TaskIndex();
 
-        public System.Threading.Tasks.Task TaskCreate(TaskDto task);
-        public System.Threading.Tasks.Task SubTaskCreate(TaskDto task);
-        public System.Threading.Tasks.Task Edit(int id, TaskDto task);
-        public System.Threading.Tasks.Task Delete(int id);
+        public Task TaskCreate(TaskDto task);
+        public Task SubTaskCreate(TaskDto task);
+        public Task Edit(int id, TaskDto task);
+        public Task Delete(int id);
         
 
-        public System.Threading.Tasks.Task ChangeStatus(int id, DTO.TaskStatus status);
+        public Task ChangeStatus(int id, DTO.TaskStatus status);
 
         public TaskDto Find(int id);
         public List<TaskDto> AllChildrenOfTask(int id);
@@ -51,7 +41,7 @@ namespace TaskControl.Service
             _mapper = mapper;
             _context = new TaskDBContext();
         }
-        public System.Threading.Tasks.Task TaskCreate(TaskDto task)
+        public Task TaskCreate(TaskDto task)
         {
             task.ParentID = null;
             task.RegistrationDate = DateTime.Now;
@@ -64,7 +54,7 @@ namespace TaskControl.Service
             return _context.SaveChangesAsync();
         }
 
-        public System.Threading.Tasks.Task SubTaskCreate(TaskDto task)
+        public Task SubTaskCreate(TaskDto task)
         {
             task.ID = 0;
             task.RegistrationDate = DateTime.Now;
@@ -90,7 +80,7 @@ namespace TaskControl.Service
             return task;
         }
 
-        public System.Threading.Tasks.Task Edit(int id, TaskDto task)
+        public Task Edit(int id, TaskDto task)
         {
             var entity = _mapper.Map<TaskDto, DAL.Entity.Task>(task);
             entity.ID = id;
@@ -98,7 +88,7 @@ namespace TaskControl.Service
             return _context.SaveChangesAsync();
         }
 
-        public System.Threading.Tasks.Task Delete(int id)
+        public Task Delete(int id)
         {
                 var task = _mapper.Map<TaskDto, DAL.Entity.Task> (Find(id));
                 var childrenTasks = _mapper.Map<List<TaskDto>, List <DAL.Entity.Task>> (AllChildrenOfTask(id));
@@ -111,7 +101,7 @@ namespace TaskControl.Service
                 return _context.SaveChangesAsync();
         }
 
-        public System.Threading.Tasks.Task ChangeStatus(int id, DTO.TaskStatus status)
+        public Task ChangeStatus(int id, DTO.TaskStatus status)
         {
             DateTime endDate = DateTime.Now;
 
@@ -137,7 +127,11 @@ namespace TaskControl.Service
                         _context.Update(childEntity);
                     }
                     if (task.taskStatus == DTO.TaskStatus.InProgress)
+                    {
                         task.taskStatus = DTO.TaskStatus.Complete;
+                        task.EndDate = endDate;
+                    }
+                        
                     else
                     {
                         return System.Threading.Tasks.Task.FromResult<object>(null);

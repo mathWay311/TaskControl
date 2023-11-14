@@ -1,14 +1,9 @@
-﻿
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
-using TaskControl.Service;
 using TaskControl.Service.DTO;
+using TaskControl.DAL;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaskControl.Service
 {
@@ -29,10 +24,10 @@ namespace TaskControl.Service
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAutoMapper(typeof(ServiceMappingProfile));
+            services.AddDbContext<TaskDBContext>(opt => opt.UseSqlite(@"Data Source=C:/db/TaskControl/TaskControl.db"));
             services.AddScoped<ITaskService, TaskService>();
         }
 

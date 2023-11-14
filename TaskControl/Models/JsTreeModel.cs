@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace TaskControl.Models
 {
@@ -21,6 +18,39 @@ namespace TaskControl.Models
 
 
     }
-
+    public static class JsTreeUtils 
+    {
+        public static IList<JsTreeModel> GetTreeJson(List<TaskViewModel> tasks)
+        {
+            IList<JsTreeModel> nodes = new List<JsTreeModel>();
+            foreach (var item in tasks)
+            {
+                nodes.Add(new JsTreeModel
+                {
+                    id = item.ID.ToString(),
+                    parent = item.ParentID == null ? "#" : item.ParentID.ToString(),
+                    text = item.TaskName,
+                    opened = true,
+                    type = statusToIconType[item.taskStatus]
+                });
+            }
+            return nodes;
+        }
+        public static Dictionary<TaskStatus, string> statusToIconType = new Dictionary<TaskStatus, string>
+        {
+            {
+                TaskStatus.Assigned, "assigned"
+            },
+            {
+                TaskStatus.InProgress, "inprogress"
+            },
+            {
+                TaskStatus.Paused, "paused"
+            },
+            {
+                TaskStatus.Complete, "complete"
+            },
+        };
+    }
     
 }

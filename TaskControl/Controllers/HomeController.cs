@@ -4,10 +4,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using TaskControl.DAL.Entity;
 using TaskControl.Models;
 using TaskControl.Service;
 using TaskControl.Service.DTO;
@@ -34,7 +32,7 @@ namespace TaskControl.Controllers
             {
                 Tasks = tasks
             };
-            ViewBag.Json = JsonSerializer.Serialize(TaskModelUtils.GetTreeJson(tasks));
+            ViewBag.Json = JsonSerializer.Serialize(JsTreeUtils.GetTreeJson(tasks));
 
             return View(TaskIndexVM);
         }
@@ -96,7 +94,7 @@ namespace TaskControl.Controllers
                 AddEstimatedTime = times["Estimated"],
                 AddElapsedTime = times["Elapsed"]
             };
-            
+            taskVM.task.ParentID = 0;
             return PartialView("_PartialDetails", taskVM);
         }
 
@@ -143,15 +141,13 @@ namespace TaskControl.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> TaskDelete(int id, [FromBody] TaskViewModel task)
+        public async Task<ActionResult> TaskDelete ([Bind(BindString.bindString)] TaskViewModel task)
         { 
             try
             {
                 if (ModelState.IsValid)
                 {
-                    if (id != task.ID) return NotFound();
-
-                    await _service.Delete(id);
+                    await _service.Delete(task.ID);
                     return RedirectToAction(nameof(Index));
                 }
                 return NotFound();
@@ -179,8 +175,6 @@ namespace TaskControl.Controllers
             await _service.ChangeStatus(id, _mapper.Map<Models.TaskStatus, Service.DTO.TaskStatus>(Models.TaskStatus.Complete));
             return (ActionResult)TaskDetails(id);
         }
-
-        
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
