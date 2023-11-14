@@ -53,7 +53,7 @@ namespace TaskControl.Service
         }
         public System.Threading.Tasks.Task TaskCreate(TaskDto task)
         {
-            task.ParentID = 0;
+            task.ParentID = null;
             task.RegistrationDate = DateTime.Now;
 
             var entity = _mapper.Map<TaskDto, DAL.Entity.Task>(task);
@@ -133,7 +133,14 @@ namespace TaskControl.Service
                     }
                     foreach (var childTask in childrenTasks)
                     {
-                        _context.Update(childTask);
+                        var childEntity = _mapper.Map<TaskDto, DAL.Entity.Task>(childTask);
+                        _context.Update(childEntity);
+                    }
+                    if (task.taskStatus == DTO.TaskStatus.InProgress)
+                        task.taskStatus = DTO.TaskStatus.Complete;
+                    else
+                    {
+                        return System.Threading.Tasks.Task.FromResult<object>(null);
                     }
                     break;
 
@@ -146,8 +153,9 @@ namespace TaskControl.Service
                         task.taskStatus = DTO.TaskStatus.InProgress;
                     break;  
             }
+            var entity = _mapper.Map<TaskDto, DAL.Entity.Task>(task);
 
-            _context.Update(task);
+            _context.Update(entity);
             return _context.SaveChangesAsync(); 
         }
 

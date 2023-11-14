@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace TaskControl.Models
 {
+    public static  class BindString
+    {
+        public const string bindString = "ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID";
+    }
     public class TaskViewModel
     {
         public int ID { get; set; }

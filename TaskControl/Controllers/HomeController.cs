@@ -51,12 +51,12 @@ namespace TaskControl.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateTask([FromBody] TaskViewModel taskVM)
+        public ActionResult CreateTask([Bind(BindString.bindString)] TaskViewModel taskVM)
         {
             if (ModelState.IsValid)
             {
                 _service.TaskCreate(_mapper.Map<TaskViewModel, TaskDto>(taskVM));
-                return View(taskVM);
+                return RedirectToAction(nameof(Index));
             }
             return View();
         }
@@ -72,7 +72,7 @@ namespace TaskControl.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateSubTask([FromBody] TaskViewModel task)
+        public ActionResult CreateSubTask([Bind(BindString.bindString)] TaskViewModel task)
         {
             if (ModelState.IsValid)
             {
@@ -108,13 +108,14 @@ namespace TaskControl.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> TaskEdit(int id, [Bind("ID,TaskName,Description,TaskExecutors,RegistrationDate,TaskStatus,EstimatedEndDate,ParentID")] TaskViewModel task)
+        public async Task<ActionResult> TaskEdit(int id, [Bind(BindString.bindString)] TaskViewModel task)
         {
             if(ModelState.IsValid)
             {
                 var TaskDto = _mapper.Map<TaskViewModel, TaskDto>(task);
                 await _service.Edit(id, TaskDto);
-                return (ActionResult)TaskDetails(id);
+
+                return RedirectToAction(nameof(Index)); ;
             }
             else
             {
