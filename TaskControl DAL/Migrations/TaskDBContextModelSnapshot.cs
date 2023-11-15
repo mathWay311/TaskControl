@@ -50,7 +50,7 @@ namespace TaskControl_DAL.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Task");
+                    b.ToTable("Task", (string)null);
                 });
 #pragma warning restore 612, 618
         }

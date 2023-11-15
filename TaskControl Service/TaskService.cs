@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
+using System.Data.Entity;
 using TaskControl.DAL;
 using TaskControl.Service.DTO;
 using TaskControl_Service;
@@ -133,27 +134,35 @@ namespace TaskControl.Service
         public List<TaskDto> getAllChildrenOfTask(int id)
         {
             List<TaskDto> ChildrenTasks = new List<TaskDto>();
-            Queue<TaskDto> toVisit = new Queue<TaskDto>();
+            Queue<TaskDto> UnvisitedTasks = new Queue<TaskDto>();
 
-            var parentTask = Find(id);
-            var allTasks = _mapper.Map<List<DAL.Entity.Task>, List<TaskDto>> ((from ts in _context.Task where id != ts.ID select ts).ToList());
+            var immediateChildren = _mapper.Map<List<DAL.Entity.Task>, List<TaskDto>>(_context.Task.Where(x => x.ParentID == id).ToList());
 
-            toVisit.Enqueue(parentTask);
-            TaskDto currentNode = toVisit.Peek();
-
-            while (toVisit.Count != 0)
+            // Добавление прямых потомков узла в очередь
+            foreach (var child in immediateChildren)
             {
-                currentNode = toVisit.Peek();
-                foreach (TaskDto task in allTasks)
+                UnvisitedTasks.Enqueue(child);
+                ChildrenTasks.Add(child);
+            }
+
+            // Просмотр остальных потомков, пока они не закончатся
+            while (UnvisitedTasks.Count != 0)
+            {
+                var currentNode = UnvisitedTasks.Peek();
+
+                immediateChildren = _mapper.Map<List<DAL.Entity.Task>, List<TaskDto>>(_context.Task.Where(x => x.ParentID == currentNode.ID).ToList());
+
+                foreach (TaskDto task in immediateChildren)
                 {
                     if (task.ParentID == currentNode.ID)
                     {
+                        UnvisitedTasks.Enqueue(task);
                         ChildrenTasks.Add(task);
-                        toVisit.Enqueue(task);
                     }
                 }
-                toVisit.Dequeue();
+                UnvisitedTasks.Dequeue();
             }
+
             return ChildrenTasks;
         }
 
