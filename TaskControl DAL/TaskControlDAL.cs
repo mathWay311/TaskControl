@@ -2,15 +2,7 @@
 using Microsoft.Extensions.Configuration;
 
 namespace TaskControl.DAL
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-
-        }
-    }
-    
+{ 
     public class TaskDBContext : DbContext
     {
         public DbSet<Entity.Task> Task { get; set; }

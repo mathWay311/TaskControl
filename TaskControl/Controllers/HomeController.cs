@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using TaskControl.Models;
 using TaskControl.Service;
 using TaskControl.Service.DTO;
+using TaskControl_Service;
 
 namespace TaskControl.Controllers
 {
@@ -26,7 +27,7 @@ namespace TaskControl.Controllers
 
         public IActionResult Index()
         {
-            var tasks = _mapper.Map<List<TaskDto>, List<TaskViewModel>>(_service.TaskIndex()) ;
+            var tasks = _mapper.Map<List<TaskDto>, List<TaskViewModel>>(_service.getAllTask()) ;
 
             var TaskIndexVM = new TaskIndexViewModel
             {
@@ -86,7 +87,7 @@ namespace TaskControl.Controllers
 
             if (task == null) return NotFound();
 
-            Dictionary<string, TimeSpan> times = _service.SubTaskTime(id);
+            Dictionary<string, TimeSpan> times = _service.calculateSubTaskTime(id);
             
             TaskDetailViewModel taskVM = new TaskDetailViewModel
             {
@@ -111,7 +112,7 @@ namespace TaskControl.Controllers
             if(ModelState.IsValid)
             {
                 var TaskDto = _mapper.Map<TaskViewModel, TaskDto>(task);
-                await _service.Edit(id, TaskDto);
+                await _service.Update(id, TaskDto);
 
                 return RedirectToAction(nameof(Index)); ;
             }
@@ -128,7 +129,7 @@ namespace TaskControl.Controllers
             
             if (taskToDelete == null) return NotFound();
 
-            var childrenTasks = _mapper.Map<List<TaskDto>, List<TaskViewModel>>( _service.AllChildrenOfTask(id));
+            var childrenTasks = _mapper.Map<List<TaskDto>, List<TaskViewModel>>( _service.getAllChildrenOfTask(id));
 
             var TaskDelVM = new TaskDeleteViewModel
             {

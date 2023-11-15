@@ -18,6 +18,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TaskControl Service\TaskControl Service.csproj" />
+    <ProjectReference Include="..\TaskControl Service\TaskControl.Service.csproj" />
   </ItemGroup>
 </Project>

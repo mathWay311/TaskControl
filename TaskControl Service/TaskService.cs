@@ -2,33 +2,10 @@
 using Microsoft.Extensions.Logging;
 using TaskControl.DAL;
 using TaskControl.Service.DTO;
+using TaskControl_Service;
 
 namespace TaskControl.Service
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-
-        }
-    }
-    public interface ITaskService
-    {
-        public List<TaskDto> TaskIndex();
-
-        public Task TaskCreate(TaskDto task);
-        public Task SubTaskCreate(TaskDto task);
-        public Task Edit(int id, TaskDto task);
-        public Task Delete(int id);
-        
-
-        public Task ChangeStatus(int id, DTO.TaskStatus status);
-
-        public TaskDto Find(int id);
-        public List<TaskDto> AllChildrenOfTask(int id);
-        public Dictionary<string, TimeSpan> SubTaskTime(int id);
-
-    }
+{ 
     public class TaskService : ITaskService
     {
         private readonly TaskDBContext _context;
@@ -68,7 +45,7 @@ namespace TaskControl.Service
             return _context.SaveChangesAsync();
         }
 
-        public List<TaskDto> TaskIndex()
+        public List<TaskDto> getAllTask()
         {
             var tasks = _mapper.Map<List<DAL.Entity.Task>, List<TaskDto>>(_context.Task.ToList());
             return tasks;
@@ -80,7 +57,7 @@ namespace TaskControl.Service
             return task;
         }
 
-        public Task Edit(int id, TaskDto task)
+        public Task Update(int id, TaskDto task)
         {
             var entity = _mapper.Map<TaskDto, DAL.Entity.Task>(task);
             entity.ID = id;
@@ -91,7 +68,7 @@ namespace TaskControl.Service
         public Task Delete(int id)
         {
                 var task = _mapper.Map<TaskDto, DAL.Entity.Task> (Find(id));
-                var childrenTasks = _mapper.Map<List<TaskDto>, List <DAL.Entity.Task>> (AllChildrenOfTask(id));
+                var childrenTasks = _mapper.Map<List<TaskDto>, List <DAL.Entity.Task>> (getAllChildrenOfTask(id));
 
                 foreach (var childTask in childrenTasks)
                 {
@@ -110,7 +87,7 @@ namespace TaskControl.Service
             switch (status)
             {
                 case DTO.TaskStatus.Complete:
-                    var childrenTasks = AllChildrenOfTask(id);
+                    var childrenTasks = getAllChildrenOfTask(id);
                     foreach(var childTask in childrenTasks)
                     {
                         if (childTask.taskStatus != DTO.TaskStatus.InProgress && childTask.taskStatus != DTO.TaskStatus.Complete)
@@ -153,7 +130,7 @@ namespace TaskControl.Service
             return _context.SaveChangesAsync(); 
         }
 
-        public List<TaskDto> AllChildrenOfTask(int id)
+        public List<TaskDto> getAllChildrenOfTask(int id)
         {
             List<TaskDto> ChildrenTasks = new List<TaskDto>();
             Queue<TaskDto> toVisit = new Queue<TaskDto>();
@@ -180,10 +157,10 @@ namespace TaskControl.Service
             return ChildrenTasks;
         }
 
-        public Dictionary<string, TimeSpan> SubTaskTime(int id)
+        public Dictionary<string, TimeSpan> calculateSubTaskTime(int id)
         {
             var parentTask = Find(id);
-            var childTasks = AllChildrenOfTask(id);
+            var childTasks = getAllChildrenOfTask(id);
             Dictionary<string, TimeSpan> times = new Dictionary<string, TimeSpan>
             {
                 { "Estimated", TimeSpan.FromSeconds(0)},

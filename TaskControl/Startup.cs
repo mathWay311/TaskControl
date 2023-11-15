@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using AutoMapper;
 using TaskControl.Service;
+using TaskControl_Service;
 using TaskControl.Models;
 using TaskControl.Service.DTO;
 
